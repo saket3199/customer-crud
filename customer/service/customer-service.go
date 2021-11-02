@@ -28,13 +28,17 @@ func (s *Service) HomePage(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (s *Service) GetAll(customers *[]model.Customer) {
+func (s *Service) GetAll(customers *[]model.Customer) error {
 
 	uow := repository.NewUnitOfWork(s.Db, true)
-	s.Repository.GetAll(uow, &customers, []string{"Orders"})
+	err := s.Repository.GetAll(uow, &customers, []string{"Orders"})
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
-func (s *Service) CreateNewCustomer(customer *model.Customer) error {
+func (s *Service) CreateCustomer(customer *model.Customer) error {
 
 	uow := repository.NewUnitOfWork(s.Db, false)
 	err := s.Repository.Add(uow, &customer)
@@ -50,7 +54,7 @@ func (s *Service) UpdateCustomer(customer *model.Customer) error {
 
 	fmt.Println(customer.ID)
 	uow := repository.NewUnitOfWork(s.Db, false)
-	err := s.Repository.Save(uow, &customer)
+	err := s.Repository.Update(uow, &customer)
 	if err != nil {
 		uow.DB.Rollback()
 		return err
@@ -59,7 +63,7 @@ func (s *Service) UpdateCustomer(customer *model.Customer) error {
 	return nil
 }
 
-func (s *Service) ReturnSingleCustomer(customer *model.Customer, id uuid.UUID) error {
+func (s *Service) GetCustomer(customer *model.Customer, id uuid.UUID) error {
 
 	uow := repository.NewUnitOfWork(s.Db, true)
 	err := s.Repository.Get(uow, &customer, id, []string{"Orders"})
@@ -74,16 +78,13 @@ func (s *Service) DeleteCustomer(customer *model.Customer) error {
 
 	uow := repository.NewUnitOfWork(s.Db, true)
 	err := s.Repository.Delete(uow, &customer)
-	orders := customer.Orders
-	for i := 0; i < len(orders); i++ {
-		err := s.Repository.Delete(uow, &i)
-		if err != nil {
-			return err
-		}
-		uow.Commit()
-	}
-	// db.Where("customerId = ?", customer.ID).Delete(&model.Order{})
 	if err != nil {
+		uow.DB.Rollback()
+		return err
+	}
+	err = s.Repository.Delete(uow, &model.Order{}, map[string]interface{}{"customer_id = ?": customer.ID})
+	if err != nil {
+		uow.DB.Rollback()
 		return err
 	}
 	uow.Commit()

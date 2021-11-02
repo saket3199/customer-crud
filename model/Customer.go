@@ -10,14 +10,3 @@ type Customer struct {
 	IsMale   *bool   `gorm:" type:tinyint" json:"isMale"`
 	Orders   []Order `json:"orders"`
 }
-
-// func NewCustomer(email, userPass, fname, lname string, age int, isMale *bool) *Customer {
-// 	return &Customer{
-// 		Email:    email,
-// 		UserPass: userPass,
-// 		Fname:    fname,
-// 		Lname:    lname,
-// 		Age:      age,
-// 		IsMale:   isMale,
-// 	}
-// }

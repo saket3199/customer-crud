@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"fmt"
+
 	"github.com/jinzhu/gorm"
 	uuid "github.com/satori/go.uuid"
 )
@@ -12,7 +14,7 @@ type Repository interface {
 	GetAllForTenant(uow *UnitOfWork, out interface{}, tenantID uuid.UUID, preloadAssociations []string) error
 	Add(uow *UnitOfWork, out interface{}) error
 	Update(uow *UnitOfWork, out interface{}) error
-	Delete(uow *UnitOfWork, out interface{}) error
+	Delete(uow *UnitOfWork, out interface{}, where ...map[string]interface{}) error
 	Save(uow *UnitOfWork, out interface{}) error
 }
 
@@ -93,8 +95,20 @@ func (repository *GormRepository) Update(uow *UnitOfWork, entity interface{}) er
 }
 
 // Delete specified Entity
-func (repository *GormRepository) Delete(uow *UnitOfWork, entity interface{}) error {
-	return uow.DB.Delete(entity).Error
+func (repository *GormRepository) Delete(uow *UnitOfWork, entity interface{}, where ...map[string]interface{}) error {
+	fmt.Println(where)
+	// value:=where[10]
+	db := uow.DB
+
+	for _, value := range where {
+		fmt.Println(value)
+
+		for key, val := range value {
+			db = db.Debug().Where(key, val)
+		}
+	}
+
+	return db.Delete(entity).Error
 }
 
 //Save specified Entity

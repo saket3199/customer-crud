@@ -13,14 +13,3 @@ type Order struct {
 	CostPerUnit float64   `gorm:" type:double" json:"costPerUnit"`
 	IsPaid      *bool     `gorm:" type:tinyint" json:"isPaid"`
 }
-
-// func NewOrder(ID uuid.UUID, itemName, itemDesc string, quantity int, costPerUnit float64, ispaid *bool) *Order {
-// 	return &Order{
-// 		CustomerID:  ID,
-// 		ItemName:    itemName,
-// 		ItemDesc:    itemDesc,
-// 		Quantity:    quantity,
-// 		CostPerUnit: costPerUnit,
-// 		IsPaid:      ispaid,
-// 	}
-// }
